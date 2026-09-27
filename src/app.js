@@ -1,14 +1,14 @@
 /** Express app factory (importable without booting — e.g. for tests). */
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const config = require('./config');
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import config from './config.js';
 
-const authRoutes = require('./routes/auth');
-const feedbackRoutes = require('./routes/feedback');
-const statsRoutes = require('./routes/stats');
+import authRoutes from './routes/auth.js';
+import feedbackRoutes from './routes/feedback.js';
+import statsRoutes from './routes/stats.js';
 
-function createApp() {
+export function createApp() {
   const app = express();
   app.use(cors({ origin: [config.frontendUrl, 'http://localhost:5173', 'http://localhost:3000'], credentials: true }));
   app.use(express.json({ limit: '2mb' }));
@@ -28,5 +28,3 @@ function createApp() {
 
   return app;
 }
-
-module.exports = { createApp };

@@ -1,15 +1,15 @@
-const jwt = require('jsonwebtoken');
-const config = require('../config');
-const { findUserById } = require('../repositories/userRepository');
+import jwt from 'jsonwebtoken';
+import config from '../config.js';
+import { findUserById } from '../repositories/userRepository.js';
 
-function signToken(user) {
+export function signToken(user) {
   const id = String(user._id || user.id);
   return jwt.sign({ sub: id, role: user.role, email: user.email }, config.jwtSecret, {
     expiresIn: config.jwtExpiresIn,
   });
 }
 
-async function requireAuth(req, res, next) {
+export async function requireAuth(req, res, next) {
   const header = req.headers.authorization || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
   if (!token) return res.status(401).json({ error: 'Missing auth token' });
@@ -24,12 +24,10 @@ async function requireAuth(req, res, next) {
   }
 }
 
-function requireRole(...roles) {
+export function requireRole(...roles) {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
     if (!roles.includes(req.user.role)) return res.status(403).json({ error: 'Forbidden: insufficient role' });
     next();
   };
 }
-
-module.exports = { signToken, requireAuth, requireRole };

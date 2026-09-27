@@ -1,7 +1,7 @@
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const { findUserByEmail, createUser, sanitizeUser } = require('../repositories/userRepository');
-const { signToken, requireAuth } = require('../middleware/auth');
+import express from 'express';
+import bcrypt from 'bcryptjs';
+import { findUserByEmail, createUser, sanitizeUser } from '../repositories/userRepository.js';
+import { signToken, requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -41,4 +41,4 @@ router.get('/me', requireAuth, (req, res) => {
   res.json({ user: sanitizeUser(req.user) });
 });
 
-module.exports = router;
+export default router;

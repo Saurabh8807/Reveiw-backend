@@ -1,14 +1,14 @@
 /** Feedback data-access: same API over MongoDB or the JSON file store. */
-const { isMongo, getModels } = require('../db/connection');
-const { readDb, writeDb, uid } = require('../db/fileStore');
+import { isMongo, getModels } from '../db/connection.js';
+import { readDb, writeDb, uid } from '../db/fileStore.js';
 
-function normalizeFeedback(f) {
+export function normalizeFeedback(f) {
   if (!f) return f;
   const id = String(f._id || f.id);
   return { ...f, id };
 }
 
-async function createFeedback(doc) {
+export async function createFeedback(doc) {
   if (isMongo()) {
     const f = await getModels().Feedback.create({ ...doc, userId: doc.userId });
     return normalizeFeedback((await getModels().Feedback.findById(f._id).lean()));
@@ -29,7 +29,7 @@ async function createFeedback(doc) {
   return fb;
 }
 
-async function updateFeedback(id, patch) {
+export async function updateFeedback(id, patch) {
   if (isMongo()) {
     await getModels().Feedback.findByIdAndUpdate(id, { $set: patch });
     const f = await getModels().Feedback.findById(id).lean();
@@ -43,7 +43,7 @@ async function updateFeedback(id, patch) {
   return db.feedbacks[i];
 }
 
-async function getFeedbackById(id) {
+export async function getFeedbackById(id) {
   if (isMongo()) {
     const f = await getModels().Feedback.findById(id).lean();
     return f ? normalizeFeedback(f) : null;
@@ -60,7 +60,7 @@ async function findUserBrief(userId, fileUsers) {
   return u ? { name: u.name, email: u.email } : null;
 }
 
-async function listFeedbacks({ sentiment, search, userId } = {}) {
+export async function listFeedbacks({ sentiment, search, userId } = {}) {
   let items;
   if (isMongo()) {
     const q = {};
@@ -92,7 +92,7 @@ async function listFeedbacks({ sentiment, search, userId } = {}) {
   return out;
 }
 
-async function deleteFeedback(id) {
+export async function deleteFeedback(id) {
   if (isMongo()) {
     const f = await getModels().Feedback.findByIdAndDelete(id).lean();
     return f ? normalizeFeedback(f) : null;
@@ -104,12 +104,3 @@ async function deleteFeedback(id) {
   writeDb(db);
   return removed;
 }
-
-module.exports = {
-  createFeedback,
-  updateFeedback,
-  getFeedbackById,
-  listFeedbacks,
-  deleteFeedback,
-  normalizeFeedback,
-};

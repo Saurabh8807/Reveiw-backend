@@ -1,29 +1,30 @@
 /** Feedback request handlers (no routing or multer config here). */
-const fs = require('fs');
-const path = require('path');
-const config = require('../config');
-const {
+import fs from 'fs';
+import path from 'path';
+import config from '../config.js';
+import {
   createFeedback,
   updateFeedback,
   getFeedbackById,
   listFeedbacks,
   deleteFeedback,
-} = require('../repositories/feedbackRepository');
-const { analyzeSentiment } = require('../services/sentiment');
-const { runAnalysisPipeline } = require('../services/pipeline');
+} from '../repositories/feedbackRepository.js';
+import { analyzeSentiment } from '../services/sentiment.js';
+import { runAnalysisPipeline } from '../services/pipeline.js';
+import { deleteStoredAudio } from '../middleware/upload.js';
 
 function currentUserId(req) {
   return String(req.user._id || req.user.id);
 }
 
-function uploadErrorMessage(err) {
+export function uploadErrorMessage(err) {
   if (err.code === 'LIMIT_FILE_SIZE') {
     return `File too large. Max ${config.maxAudioMB}MB / ${config.maxDurationSec}s.`;
   }
   return err.message;
 }
 
-async function uploadFeedback(req, res) {
+export async function uploadFeedback(req, res) {
   if (!req.file) return res.status(400).json({ error: 'audio file field required' });
   try {
     const { orderId = '', language = 'en-IN', clientTranscript = '', durationSec = 0 } = req.body || {};
@@ -31,7 +32,7 @@ async function uploadFeedback(req, res) {
     if (dur > config.maxDurationSec) {
       // Local files live on disk; Cloudinary files need an API delete.
       if (req.file.path && !String(req.file.path).startsWith('http')) fs.unlink(req.file.path, () => {});
-      else if (req.file.filename) require('../middleware/upload').deleteStoredAudio(req.file.filename, req.file.path);
+      else if (req.file.filename) deleteStoredAudio(req.file.filename, req.file.path);
       return res.status(413).json({ error: `Recording too long. Max ${config.maxDurationSec}s.` });
     }
     // Cloudinary: req.file.path is the https URL, filename is the public_id.
@@ -60,16 +61,16 @@ async function uploadFeedback(req, res) {
   }
 }
 
-async function listMyFeedback(req, res) {
+export async function listMyFeedback(req, res) {
   res.json({ feedbacks: await listFeedbacks({ userId: currentUserId(req) }) });
 }
 
-async function listAllFeedback(req, res) {
+export async function listAllFeedback(req, res) {
   const { sentiment, search } = req.query;
   res.json({ feedbacks: await listFeedbacks({ sentiment, search }) });
 }
 
-async function getFeedback(req, res) {
+export async function getFeedback(req, res) {
   const fb = await getFeedbackById(req.params.id);
   if (!fb) return res.status(404).json({ error: 'not found' });
   if (req.user.role !== 'admin' && String(fb.userId) !== currentUserId(req)) {
@@ -78,7 +79,7 @@ async function getFeedback(req, res) {
   res.json({ feedback: fb });
 }
 
-async function reviewFeedback(req, res) {
+export async function reviewFeedback(req, res) {
   const fb = await getFeedbackById(req.params.id);
   if (!fb) return res.status(404).json({ error: 'not found' });
   const { correctedTranscript, adminNotes } = req.body || {};
@@ -91,27 +92,16 @@ async function reviewFeedback(req, res) {
   res.json({ feedback: await updateFeedback(fb.id || req.params.id, patch) });
 }
 
-async function removeFeedback(req, res) {
+export async function removeFeedback(req, res) {
   const fb = await getFeedbackById(req.params.id);
   if (!fb) return res.status(404).json({ error: 'not found' });
-  await require('../middleware/upload').deleteStoredAudio(fb.fileName, fb.audioUrl);
+  await deleteStoredAudio(fb.fileName, fb.audioUrl);
   await deleteFeedback(req.params.id);
   res.json({ ok: true });
 }
 
-async function streamAudio(req, res) {
+export async function streamAudio(req, res) {
   const fp = path.join(config.uploadDir, path.basename(req.params.filename));
   if (!fs.existsSync(fp)) return res.status(404).json({ error: 'audio not found' });
   res.sendFile(path.resolve(fp));
 }
-
-module.exports = {
-  uploadErrorMessage,
-  uploadFeedback,
-  listMyFeedback,
-  listAllFeedback,
-  getFeedback,
-  reviewFeedback,
-  removeFeedback,
-  streamAudio,
-};

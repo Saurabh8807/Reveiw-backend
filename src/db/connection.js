@@ -1,36 +1,34 @@
 /** Connection manager: MongoDB when MONGO_URI is set, else file store. */
-const config = require('../config');
+import config from '../config.js';
 
 let useMongo = false;
 let Models = null;
 
-async function initDb() {
+export async function initDb() {
   if (config.mongoUri) {
     try {
-      const mongoose = require('mongoose');
+      const { default: mongoose } = await import('mongoose');
       await mongoose.connect(config.mongoUri);
-      Models = require('../models');
+      Models = await import('../models.js');
       useMongo = true;
       console.log('[db] connected to MongoDB');
-      const { seedMongo } = require('./seed');
+      const { seedMongo } = await import('./seed.js');
       await seedMongo(Models);
       return;
     } catch (e) {
       console.warn('[db] MongoDB connect failed, falling back to file store:', e.message);
     }
   }
-  const { ensureFileDb } = require('./fileStore');
-  const { seedFile } = require('./seed');
+  const { ensureFileDb } = await import('./fileStore.js');
+  const { seedFile } = await import('./seed.js');
   ensureFileDb();
   await seedFile();
 }
 
-function isMongo() {
+export function isMongo() {
   return useMongo;
 }
 
-function getModels() {
+export function getModels() {
   return Models;
 }
-
-module.exports = { initDb, isMongo, getModels };

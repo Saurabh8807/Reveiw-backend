@@ -12,7 +12,7 @@
  *    status: uploaded|transcribed|failed, adminNotes, createdAt
  *  }
  */
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema(
   {
@@ -66,7 +66,5 @@ const FeedbackSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = {
-  User: mongoose.models.User || mongoose.model('User', UserSchema),
-  Feedback: mongoose.models.Feedback || mongoose.model('Feedback', FeedbackSchema),
-};
+export const User = mongoose.models.User || mongoose.model('User', UserSchema);
+export const Feedback = mongoose.models.Feedback || mongoose.model('Feedback', FeedbackSchema);

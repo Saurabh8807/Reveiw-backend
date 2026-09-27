@@ -1,9 +1,9 @@
-/** Google Cloud Speech-to-Text provider. Lazy-requires the SDK. */
-const fs = require('fs');
+/** Google Cloud Speech-to-Text provider. Lazy-imports the SDK. */
+import fs from 'fs';
 
-async function transcribeWithGoogle(filePath, language = 'en-IN') {
-  // Lazy-require so the app runs without the package installed.
-  const speech = require('@google-cloud/speech');
+export async function transcribeWithGoogle(filePath, language = 'en-IN') {
+  // Lazy-import so the app runs without the package installed.
+  const { default: speech } = await import('@google-cloud/speech');
   const client = new speech.SpeechClient();
   const audio = { content: fs.readFileSync(filePath).toString('base64') };
   const cfg = {
@@ -16,5 +16,3 @@ async function transcribeWithGoogle(filePath, language = 'en-IN') {
   const alt = resp.results?.[0]?.alternatives?.[0];
   return { text: alt?.transcript || '', confidence: alt?.confidence ?? 0.7, engine: 'google-stt', language };
 }
-
-module.exports = { transcribeWithGoogle };

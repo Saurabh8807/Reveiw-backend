@@ -1,19 +1,19 @@
 /** User data-access: same API over MongoDB or the JSON file store. */
-const { isMongo, getModels } = require('../db/connection');
-const { readDb, writeDb, uid } = require('../db/fileStore');
+import { isMongo, getModels } from '../db/connection.js';
+import { readDb, writeDb, uid } from '../db/fileStore.js';
 
-async function findUserByEmail(email) {
+export async function findUserByEmail(email) {
   email = String(email).toLowerCase().trim();
   if (isMongo()) return getModels().User.findOne({ email }).lean();
   return readDb().users.find((u) => u.email === email) || null;
 }
 
-async function findUserById(id) {
+export async function findUserById(id) {
   if (isMongo()) return getModels().User.findById(id).lean();
   return readDb().users.find((u) => u.id === String(id) || u._id === String(id)) || null;
 }
 
-async function createUser({ name, email, passwordHash, role }) {
+export async function createUser({ name, email, passwordHash, role }) {
   if (isMongo()) {
     const u = await getModels().User.create({ name, email, passwordHash, role });
     return u.toObject();
@@ -25,10 +25,8 @@ async function createUser({ name, email, passwordHash, role }) {
   return user;
 }
 
-function sanitizeUser(u) {
+export function sanitizeUser(u) {
   if (!u) return null;
   const id = String(u._id || u.id);
   return { id, name: u.name, email: u.email, role: u.role, createdAt: u.createdAt };
 }
-
-module.exports = { findUserByEmail, findUserById, createUser, sanitizeUser };

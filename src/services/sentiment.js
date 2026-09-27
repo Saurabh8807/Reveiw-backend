@@ -1,2 +1,2 @@
 /** Backward-compatible facade — implementation lives in ./sentiment/. */
-module.exports = require('./sentiment/index');
+export { analyzeSentiment } from './sentiment/index.js';

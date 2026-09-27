@@ -3,11 +3,11 @@
  * Fire-and-forget from the upload handler so large-file uploads never
  * block on slow STT. Swap in a queue (BullMQ) here when scaling.
  */
-const { transcribe } = require('./transcription');
-const { analyzeSentiment } = require('./sentiment');
-const { updateFeedback } = require('../repositories/feedbackRepository');
+import { transcribe } from './transcription.js';
+import { analyzeSentiment } from './sentiment.js';
+import { updateFeedback } from '../repositories/feedbackRepository.js';
 
-function runAnalysisPipeline({ feedbackId, filePath, language, clientTranscript }) {
+export function runAnalysisPipeline({ feedbackId, filePath, language, clientTranscript }) {
   (async () => {
     try {
       const t = await transcribe({ filePath, language, clientTranscript });
@@ -19,5 +19,3 @@ function runAnalysisPipeline({ feedbackId, filePath, language, clientTranscript 
     }
   })();
 }
-
-module.exports = { runAnalysisPipeline };

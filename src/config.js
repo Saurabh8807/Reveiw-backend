@@ -1,7 +1,13 @@
-require('dotenv').config();
-const path = require('path');
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-module.exports = {
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const config = {
   port: parseInt(process.env.PORT || '5000', 10),
   jwtSecret: process.env.JWT_SECRET || 'dev-secret-change-me',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
@@ -13,3 +19,5 @@ module.exports = {
   maxDurationSec: parseInt(process.env.MAX_DURATION_SEC || '300', 10), // 5 min
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
 };
+
+export default config;

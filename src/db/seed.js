@@ -1,13 +1,13 @@
 /** Seed demo accounts for both persistence backends. */
-const bcrypt = require('bcryptjs');
-const { readDb, writeDb, uid } = require('./fileStore');
+import bcrypt from 'bcryptjs';
+import { readDb, writeDb, uid } from './fileStore.js';
 
 const SEEDS = [
   { name: 'Admin (BakeHouse Mumbai)', email: 'admin@bakers.in', password: 'Admin123!', role: 'admin' },
   { name: 'Demo Customer', email: 'user@demo.in', password: 'User123!', role: 'user' },
 ];
 
-async function seedFile() {
+export async function seedFile() {
   const db = readDb();
   for (const s of SEEDS) {
     if (!db.users.find((u) => u.email === s.email)) {
@@ -25,7 +25,7 @@ async function seedFile() {
   console.log('[db] file store ready (data/db.json). Seeded admin@bakers.in / Admin123!');
 }
 
-async function seedMongo(Models) {
+export async function seedMongo(Models) {
   for (const s of SEEDS) {
     if (!(await Models.User.findOne({ email: s.email }))) {
       await Models.User.create({
@@ -37,5 +37,3 @@ async function seedMongo(Models) {
     }
   }
 }
-
-module.exports = { seedFile, seedMongo };

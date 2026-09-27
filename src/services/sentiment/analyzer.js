@@ -1,7 +1,7 @@
 /** Rule-based sentiment analyzer. Swap with Google Cloud NL without changing this shape. */
-const { POSITIVE, NEGATIVE } = require('./lexicons');
+import { POSITIVE, NEGATIVE } from './lexicons.js';
 
-function analyzeSentiment(text = '') {
+export function analyzeSentiment(text = '') {
   const lower = String(text).toLowerCase();
   const words = lower.split(/[^a-z\u0900-\u097F]+/).filter(Boolean);
   let pos = 0;
@@ -32,5 +32,3 @@ function analyzeSentiment(text = '') {
   }
   return { label, score, confidence, keywords };
 }
-
-module.exports = { analyzeSentiment };

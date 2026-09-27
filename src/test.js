@@ -1,6 +1,6 @@
 // Critical smoke tests: sentiment + validation helpers. Run: npm test
-const assert = require('assert');
-const { analyzeSentiment } = require('./services/sentiment');
+import assert from 'assert';
+import { analyzeSentiment } from './services/sentiment.js';
 
 let pass = 0;
 function t(name, fn) {

@@ -1,6 +1,6 @@
-const express = require('express');
-const { requireAuth, requireRole } = require('../middleware/auth');
-const { listFeedbacks } = require('../repositories/feedbackRepository');
+import express from 'express';
+import { requireAuth, requireRole } from '../middleware/auth.js';
+import { listFeedbacks } from '../repositories/feedbackRepository.js';
 
 const router = express.Router();
 
@@ -21,4 +21,4 @@ router.get('/summary', requireAuth, requireRole('admin'), async (_req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

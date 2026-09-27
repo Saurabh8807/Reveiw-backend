@@ -1,12 +1,14 @@
 /** Multer audio-upload configuration: Cloudinary (if configured) else local disk. */
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
-const config = require('../config');
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import config from '../config.js';
 
 if (!fs.existsSync(config.uploadDir)) fs.mkdirSync(config.uploadDir, { recursive: true });
 
-const ALLOWED = new Set([
+export const ALLOWED = new Set([
   'audio/webm',
   'audio/wav',
   'audio/mpeg',
@@ -27,7 +29,6 @@ function fileFilter(_req, file, cb) {
 let storage;
 let isCloudinary = false;
 if (config.cloudinaryUrl || process.env.CLOUDINARY_CLOUD_NAME) {
-  const cloudinary = require('cloudinary').v2;
   // CLOUDINARY_URL env is picked up automatically; explicit keys also supported.
   if (process.env.CLOUDINARY_CLOUD_NAME && !config.cloudinaryUrl) {
     cloudinary.config({
@@ -36,7 +37,6 @@ if (config.cloudinaryUrl || process.env.CLOUDINARY_CLOUD_NAME) {
       api_secret: process.env.CLOUDINARY_API_SECRET,
     });
   }
-  const { CloudinaryStorage } = require('multer-storage-cloudinary');
   storage = new CloudinaryStorage({
     cloudinary,
     params: {
@@ -58,17 +58,18 @@ if (config.cloudinaryUrl || process.env.CLOUDINARY_CLOUD_NAME) {
   });
 }
 
-const upload = multer({
+export const upload = multer({
   storage,
   limits: { fileSize: config.maxAudioMB * 1024 * 1024 },
   fileFilter,
 });
 
-async function deleteStoredAudio(fileName, audioUrl) {
+export { isCloudinary };
+
+export async function deleteStoredAudio(fileName, audioUrl) {
   // Cloudinary: fileName holds the public_id.
   if (audioUrl && audioUrl.startsWith('http')) {
     try {
-      const cloudinary = require('cloudinary').v2;
       const publicId = String(fileName || '').replace(/\.[a-z0-9]+$/i, '');
       if (publicId) await cloudinary.uploader.destroy(publicId, { resource_type: 'video' });
     } catch (e) {
@@ -78,5 +79,3 @@ async function deleteStoredAudio(fileName, audioUrl) {
   }
   if (fileName) fs.unlink(path.join(config.uploadDir, path.basename(fileName)), () => {});
 }
-
-module.exports = { upload, ALLOWED, isCloudinary, deleteStoredAudio };
