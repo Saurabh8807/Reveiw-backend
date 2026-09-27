@@ -10,7 +10,23 @@ import statsRoutes from './routes/stats.js';
 
 export function createApp() {
   const app = express();
-  app.use(cors({ origin: [config.frontendUrl, 'http://localhost:5173', 'http://localhost:3000'], credentials: true }));
+  const allowedOrigins = [
+    config.frontendUrl,
+    ...(config.extraOrigins || []),
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://reveiw-frontend.vercel.app',
+  ].filter((v, i, a) => v && a.indexOf(v) === i);
+  app.use(
+    cors({
+      origin: (origin, cb) => {
+        // allow non-browser clients (no Origin header) + whitelisted origins
+        if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+        return cb(null, false);
+      },
+      credentials: true,
+    })
+  );
   app.use(express.json({ limit: '2mb' }));
   app.use(morgan('dev'));
 

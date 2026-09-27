@@ -17,7 +17,12 @@ const config = {
   uploadDir: process.env.UPLOAD_DIR || path.join(__dirname, '..', 'uploads'),
   maxAudioMB: parseInt(process.env.MAX_AUDIO_MB || '10', 10),
   maxDurationSec: parseInt(process.env.MAX_DURATION_SEC || '300', 10), // 5 min
-  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  frontendUrl: (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, ''),
+  // comma-separated extra origins, e.g. FRONTEND_URLS=https://a.vercel.app,https://b.vercel.app
+  extraOrigins: (process.env.FRONTEND_URLS || '')
+    .split(',')
+    .map((s) => s.trim().replace(/\/+$/, ''))
+    .filter(Boolean),
 };
 
 export default config;
